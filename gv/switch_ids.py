@@ -8,10 +8,10 @@ def modify_json_file(input_file, output_file):
     for item in data:
         if item['category_id'] == 2:
             item['category_id'] = 1
-            item['category_name'] = 'vehicle'
+            #item['category_name'] = 'vehicle'
         else:
             item['category_id'] = 2
-            item['category_name'] = 'person'
+            #item['category_name'] = 'person'
 
     with open(output_file, 'w') as outfile:
         json.dump(data, outfile)

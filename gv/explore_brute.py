@@ -94,12 +94,13 @@ class Explore:
                     image_size=resize,
                     device=self.device)
     
-    def get_predictions(self, resize, detection_model, slicee, img_path):
+    def get_predictions(self, resize_width, detection_model, slicee_width, img_path, resize_height,
+                        slicee_height):
         result = get_sliced_prediction(
                     self.path+img_path,
                     detection_model,
-                    slice_height = self.ss.s_h[slicee],
-                    slice_width = self.ss.s_w[slicee],
+                    slice_height = self.ss.s_h[slicee_height],
+                    slice_width = self.ss.s_w[slicee_width],
                     overlap_height_ratio = self.height_ratio,
                     overlap_width_ratio = self.width_ratio,
                     perform_standard_pred = True,
@@ -108,8 +109,8 @@ class Explore:
                     postprocess_match_threshold = self.IOS_thresh,
                     auto_slice_resolution = False,
                     resize = True,
-                    resize_height = self.ss.r_h[resize],
-                    resize_width = self.ss.r_w[resize])
+                    resize_height = self.ss.r_h[resize_height],
+                    resize_width = self.ss.r_w[resize_width])
         return result
     
     def get_annotation_list(self, img_path, result, ann_list):
@@ -129,16 +130,16 @@ class Explore:
         return ann_list
     
     def save_json(self, slicee, resize, csv_list):
-        json_name = str(self.ss.s_h[slicee])+'_'+str(self.ss.r_h[resize])+'_'+self.outfile
+        json_name = str(self.ss.s_w[slicee])+'_'+str(self.ss.r_w[resize])+'_'+self.outfile
         with open(json_name, 'w') as f:
             json.dump(csv_list, f, ensure_ascii=False)
         return json_name
     
-    def save_parameters(self, results, resize, slicee):
-        results['resize_height'] = self.ss.r_h[resize]
-        results['resize_width'] = self.ss.r_w[resize]
-        results['slice_height'] = self.ss.s_h[slicee]
-        results['slice_width'] = self.ss.s_w[slicee]
+    def save_parameters(self, results, resize_width, slicee_width, resize_height, slicee_height):
+        results['resize_height'] = self.ss.r_h[resize_height]
+        results['resize_width'] = self.ss.r_w[resize_width]
+        results['slice_height'] = self.ss.s_h[slicee_height]
+        results['slice_width'] = self.ss.s_w[slicee_width]
         results['confidence'] = self.conf
         results['overlap_height_ratio'] = self.height_ratio
         results['overlap_width_ratio'] = self.width_ratio
@@ -153,7 +154,7 @@ class Explore:
     
     def log_time_results(self, elapsed_time_resize, results, resize):
         if resize == 0:
-            total_resize_time = elapsed_time_resize * len(self.ss.r_h) * len(self.ss.s_h)
+            total_resize_time = elapsed_time_resize * len(self.ss.r_h) * len(self.ss.s_h) * len(self.ss.r_w) * len(self.ss.s_w)
             self.total_time = total_resize_time - elapsed_time_resize
             print('\n\nApproximate total time  = {}\n\n'.format(self.convert_time(self.total_time)))
         else:
@@ -182,36 +183,39 @@ class Explore:
             None
         """
         with open("results.txt", "a") as filee:
-            for slicee in range(len(self.ss.s_h)):
-                for resize in range(len(self.ss.r_h)):
-                    csv_list =[]
-                    ann_list =[]
-                    start_time_resize = time.time()
-                    print('Running inference for size {}'.format(self.ss.r_h[resize]))
-                    max_dim = max(self.ss.r_h[resize], self.ss.r_w[resize])
-                    detection_model = self.get_model(max_dim)
-                    for img_path in tqdm(self.files):
-                        result = self.get_predictions(resize, detection_model, slicee, img_path)
-                        ann_list = self.get_annotation_list(img_path, result, ann_list)
-                    csv_list.extend(ann_list)
-                    print('len of csv_list = ',len(csv_list))
-                    json_name = self.save_json(slicee, resize, csv_list)
-                    if not self.custom:
-                        si.modify_json_file(json_name,json_name)
-                    if csv_list:
-                        evaluation_metrics = EvaluationMetrics(self.annotations_path, json_name, 0.5)
-                        results = evaluation_metrics.calculate_metrics()
-                        results = self.save_parameters(results, resize, slicee)
-                        end_time_resize = time.time()
-                        elapsed_time_resize = end_time_resize - start_time_resize
-                        results = self.save_time(elapsed_time_resize, results)
-                        self.log_time_results(elapsed_time_resize, results, resize)
-                        filee.write(json.dumps(results, indent=4, sort_keys=False))
-                        filee.flush()
-                        new_line = '\n'
-                        filee.write(new_line)
-                        filee.flush()
-                    torch.cuda.empty_cache()
+            for slicee_height in range(len(self.ss.s_h)):
+                for slicee_width in range(len(self.ss.s_w)):
+                    for resize_height in range(len(self.ss.r_h)):
+                        for resize_width in range(len(self.ss.r_h)):
+                            csv_list =[]
+                            ann_list =[]
+                            start_time_resize = time.time()
+                            print('Running inference for size {}'.format(self.ss.r_h[resize_width]))
+                            max_dim = max(self.ss.r_h[resize_height], self.ss.r_w[resize_width])
+                            detection_model = self.get_model(max_dim)
+                            for img_path in tqdm(self.files):
+                                result = self.get_predictions(resize_width, detection_model,
+                                    slicee_width, img_path, resize_height, slicee_height)
+                                ann_list = self.get_annotation_list(img_path, result, ann_list)
+                            csv_list.extend(ann_list)
+                            json_name = self.save_json(slicee_width, resize_width, csv_list)
+                            if not self.custom:
+                                si.modify_json_file(json_name,json_name)
+                            if csv_list:
+                                evaluation_metrics = EvaluationMetrics(self.annotations_path, json_name, 0.5)
+                                results = evaluation_metrics.calculate_metrics()
+                                results = self.save_parameters(results, resize_width, slicee_width,
+                                    resize_height, slicee_height)
+                                end_time_resize = time.time()
+                                elapsed_time_resize = end_time_resize - start_time_resize
+                                results = self.save_time(elapsed_time_resize, results)
+                                self.log_time_results(elapsed_time_resize, results, resize_width)
+                                filee.write(json.dumps(results, indent=4, sort_keys=False))
+                                filee.flush()
+                                new_line = '\n'
+                                filee.write(new_line)
+                                filee.flush()
+                            torch.cuda.empty_cache()
 
 if __name__ == "__main__":   
     parser = argparse.ArgumentParser(description='Explore Class Argparse')

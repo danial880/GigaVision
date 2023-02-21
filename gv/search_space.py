@@ -12,7 +12,7 @@ class SearchSpace:
     # slice width lower bounds
     s_w_lb = 3840
     # slice width upper bounds
-    s_w_ub = 3840
+    s_w_ub = 4352
     # slice width step
     s_w_res = 512
     # list of slice widths
@@ -20,9 +20,9 @@ class SearchSpace:
 
 # Resize bounds of slice
     # resize height lower bounds
-    r_h_lb = 960
+    r_h_lb = 640
     # resize height upper bounds
-    r_h_ub = 1600
+    r_h_ub = 640
     # resize height step
     r_h_res = 320
     # list of resize heights 
@@ -31,7 +31,7 @@ class SearchSpace:
     # resize width lower bounds
     r_w_lb = 640
     # resize width upper bounds
-    r_w_ub = 1280
+    r_w_ub = 960
     # resize width step
     r_w_res = 320
     # list of resize widths
