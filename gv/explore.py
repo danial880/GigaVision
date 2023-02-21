@@ -125,6 +125,10 @@ class Explore:
                     ann[i]['category_id'] = 1
                     ann[i]['category_name'] = 'vehicle'
                     ann_list.append(ann[i])
+                del ann[i]['segmentation']
+                del ann[i]['iscrowd']
+                del ann[i]['area']
+                del ann[i]['category_name']
         return ann_list
     
     def save_json(self, slicee, resize, csv_list):
