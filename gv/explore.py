@@ -73,9 +73,12 @@ class Explore:
         self.ss = SearchSpace()
         self.device = device
     
+    def set_categories(self, category_list):
+        self.category = category_list
+    
     def get_model(self, resize):
         '''
-        Returns the YOLOv7 object detection model with specified confidence threshold and image 
+        Returns the object detection model with specified type, confidence threshold and image 
         size.
         '''
         if self.model_type == 'detectron2':
@@ -87,7 +90,7 @@ class Explore:
                     model_path=self.model_path,
                     config_path=self.config_path,
                     confidence_threshold=self.conf,
-                    image_size=self.ss.r_h[resize],
+                    image_size=resize,
                     device=self.device)
     
     def get_predictions(self, resize, detection_model, slicee, img_path):
@@ -131,8 +134,10 @@ class Explore:
         return json_name
     
     def save_parameters(self, results, resize, slicee):
-        results['resize'] = self.ss.r_h[resize]
-        results['slice'] = self.ss.s_h[slicee]
+        results['resize_height'] = self.ss.r_h[resize]
+        results['resize_width'] = self.ss.r_w[resize]
+        results['slice_height'] = self.ss.s_h[slicee]
+        results['slice_width'] = self.ss.s_w[slicee]
         results['confidence'] = self.conf
         results['overlap_height_ratio'] = self.height_ratio
         results['overlap_width_ratio'] = self.width_ratio
@@ -182,7 +187,8 @@ class Explore:
                     ann_list =[]
                     start_time_resize = time.time()
                     print('Running inference for size {}'.format(self.ss.r_h[resize]))
-                    detection_model = self.get_model(resize)
+                    max_dim = max(self.ss.r_h[resize], self.ss.r_w[resize])
+                    detection_model = self.get_model(max_dim)
                     for img_path in tqdm(self.files):
                         result = self.get_predictions(resize, detection_model, slicee, img_path)
                         ann_list = self.get_annotation_list(img_path, result, ann_list)
