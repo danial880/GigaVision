@@ -73,6 +73,7 @@ class Explore:
         self.ss = SearchSpace()
         self.device = device
         self.custom = custom
+        self.set_time = False
     
     def set_categories(self, category_list):
         self.category = category_list
@@ -153,7 +154,8 @@ class Explore:
         return results
     
     def log_time_results(self, elapsed_time_resize, results, resize):
-        if resize == 0:
+        if not self.set_time:
+            self.set_time = True
             total_resize_time = elapsed_time_resize * len(self.ss.r_h) * len(self.ss.s_h) * len(self.ss.r_w) * len(self.ss.s_w)
             self.total_time = total_resize_time - elapsed_time_resize
             print('\n\nApproximate total time  = {}\n\n'.format(self.convert_time(self.total_time)))
@@ -186,11 +188,11 @@ class Explore:
             for slicee_height in range(len(self.ss.s_h)):
                 for slicee_width in range(len(self.ss.s_w)):
                     for resize_height in range(len(self.ss.r_h)):
-                        for resize_width in range(len(self.ss.r_h)):
+                        for resize_width in range(len(self.ss.r_w)):
                             csv_list =[]
                             ann_list =[]
                             start_time_resize = time.time()
-                            print('Running inference for size {}'.format(self.ss.r_h[resize_width]))
+                            print('Running inference for size {}'.format(self.ss.r_w[resize_width]))
                             max_dim = max(self.ss.r_h[resize_height], self.ss.r_w[resize_width])
                             detection_model = self.get_model(max_dim)
                             for img_path in tqdm(self.files):
@@ -209,7 +211,7 @@ class Explore:
                                 end_time_resize = time.time()
                                 elapsed_time_resize = end_time_resize - start_time_resize
                                 results = self.save_time(elapsed_time_resize, results)
-                                self.log_time_results(elapsed_time_resize, results, resize_width)
+                                self.log_time_results(elapsed_time_resize, results, slicee_height)
                                 filee.write(json.dumps(results, indent=4, sort_keys=False))
                                 filee.flush()
                                 new_line = '\n'
