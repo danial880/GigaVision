@@ -12,11 +12,9 @@ usage: python gv/explore.py \
     --outfile results.json
 """
 import os
-import sys
 import json
 import time
 import torch
-import logging
 import argparse
 import pandas as pd
 import os.path as osp
@@ -59,7 +57,7 @@ class Explore:
         self.height_ratio = height_ratio
         self.width_ratio = width_ratio
         self.IOS_thresh = IOS_thresh
-        self.category = ['person', 'bicycle','car', 'motorcycle', 'bus', 'truck', 'vehicle']
+        self.category = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck', 'vehicle']
         self.model_type = model_type
         self.model_path = model_path
         self.config_path = config_path
@@ -73,14 +71,13 @@ class Explore:
         self.ss = SearchSpace()
         self.device = device
         self.custom = custom
-    
+
     def set_categories(self, category_list):
         self.category = category_list
-    
+
     def get_model(self, resize):
         '''
-        Returns the object detection model with specified type, confidence threshold and image 
-        size.
+        Returns the object detection model with specified type, confidence threshold and image size.
         '''
         if self.model_type == 'detectron2':
             from sahi.utils.detectron2 import Detectron2TestConstants
@@ -93,47 +90,47 @@ class Explore:
                     confidence_threshold=self.conf,
                     image_size=resize,
                     device=self.device)
-    
+
     def get_predictions(self, resize, detection_model, slicee, img_path):
         result = get_sliced_prediction(
                     self.path+img_path,
                     detection_model,
-                    slice_height = self.ss.s_h[slicee],
-                    slice_width = self.ss.s_w[slicee],
-                    overlap_height_ratio = self.height_ratio,
-                    overlap_width_ratio = self.width_ratio,
-                    perform_standard_pred = True,
-                    postprocess_type = "GREEDYNMM",
-                    postprocess_match_metric = "IOS",
-                    postprocess_match_threshold = self.IOS_thresh,
-                    auto_slice_resolution = False,
-                    resize = True,
-                    resize_height = self.ss.r_h[resize],
-                    resize_width = self.ss.r_w[resize])
+                    slice_height=self.ss.s_h[slicee],
+                    slice_width=self.ss.s_w[slicee],
+                    overlap_height_ratio=self.height_ratio,
+                    overlap_width_ratio=self.width_ratio,
+                    perform_standard_pred=True,
+                    postprocess_type="GREEDYNMM",
+                    postprocess_match_metric="IOS",
+                    postprocess_match_threshold=self.IOS_thresh,
+                    auto_slice_resolution=False,
+                    resize=True,
+                    resize_height=self.ss.r_h[resize],
+                    resize_width=self.ss.r_w[resize])
         return result
-    
+
     def get_annotation_list(self, img_path, result, ann_list):
-        data_id = self.data_csv[self.data_csv['Frame_Number']==img_path]    
+        data_id = self.data_csv[self.data_csv['Frame_Number'] == img_path]
         ids = data_id['image id'].unique().item()
-        print(img_path ,ids)
+        print(img_path, ids)
         ann = result.to_coco_predictions(image_id=ids)
         for i in range(len(ann)):
             if ann[i]['category_name'] in self.category:
-                if ann[i]['category_name']=='person':
-                    ann[i]['category_id']= 2
+                if ann[i]['category_name'] == 'person':
+                    ann[i]['category_id'] = 2
                     ann_list.append(ann[i])
                 else:
                     ann[i]['category_id'] = 1
                     ann[i]['category_name'] = 'vehicle'
                     ann_list.append(ann[i])
         return ann_list
-    
+
     def save_json(self, slicee, resize, csv_list):
         json_name = str(self.ss.s_h[slicee])+'_'+str(self.ss.r_h[resize])+'_'+self.outfile
         with open(json_name, 'w') as f:
             json.dump(csv_list, f, ensure_ascii=False)
         return json_name
-    
+
     def save_parameters(self, results, resize, slicee):
         results['resize_height'] = self.ss.r_h[resize]
         results['resize_width'] = self.ss.r_w[resize]
@@ -144,13 +141,13 @@ class Explore:
         results['overlap_width_ratio'] = self.width_ratio
         results['IOS_thresh'] = self.IOS_thresh
         return results
-    
+
     def save_time(self, elapsed_time_resize, results):
         average_time_image = elapsed_time_resize / len(self.files)
-        results['elapsed_time_resize'] = round(elapsed_time_resize,3)
-        results['average_time_image'] = round(average_time_image,3)
+        results['elapsed_time_resize'] = round(elapsed_time_resize, 3)
+        results['average_time_image'] = round(average_time_image, 3)
         return results
-    
+
     def log_time_results(self, elapsed_time_resize, results, resize):
         if resize == 0:
             total_resize_time = elapsed_time_resize * len(self.ss.r_h) * len(self.ss.s_h)
@@ -160,7 +157,7 @@ class Explore:
             self.total_time -= elapsed_time_resize
             print('\n\nApproximate total time left  = {}\n\n'.format(self.convert_time(self.total_time)))
         print((json.dumps(results, indent=4, sort_keys=False)))
-    
+
     def convert_time(self, seconds):
         if seconds >= 3600:
             hours = seconds // 3600
@@ -184,8 +181,8 @@ class Explore:
         with open("results.txt", "a") as filee:
             for slicee in range(len(self.ss.s_h)):
                 for resize in range(len(self.ss.r_h)):
-                    csv_list =[]
-                    ann_list =[]
+                    csv_list = []
+                    ann_list = []
                     start_time_resize = time.time()
                     print('Running inference for size {}'.format(self.ss.r_h[resize]))
                     max_dim = max(self.ss.r_h[resize], self.ss.r_w[resize])
@@ -194,10 +191,10 @@ class Explore:
                         result = self.get_predictions(resize, detection_model, slicee, img_path)
                         ann_list = self.get_annotation_list(img_path, result, ann_list)
                     csv_list.extend(ann_list)
-                    print('len of csv_list = ',len(csv_list))
+                    print('len of csv_list = ', len(csv_list))
                     json_name = self.save_json(slicee, resize, csv_list)
                     if not self.custom:
-                        si.modify_json_file(json_name,json_name)
+                        si.modify_json_file(json_name, json_name)
                     if csv_list:
                         evaluation_metrics = EvaluationMetrics(self.annotations_path, json_name, 0.5)
                         results = evaluation_metrics.calculate_metrics()
@@ -213,26 +210,23 @@ class Explore:
                         filee.flush()
                     torch.cuda.empty_cache()
 
-if __name__ == "__main__":   
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Explore Class Argparse')
     # add arguments
     parser.add_argument('--conf', type=float, default=0.25, help='Confidence threshold')
     parser.add_argument('--height_ratio', type=float, default=0.2, help='Overlap height ratio')
     parser.add_argument('--width_ratio', type=float, default=0.1, help='Overlap width ratio')
-    parser.add_argument('--IOS_thresh', type=float, default=0.8,
-        help='Intersection over union threshold')
+    parser.add_argument('--IOS_thresh', type=float, default=0.8, help='Intersection over union threshold')
     parser.add_argument('--model_path', type=str, default='yolov7-e6e.pt', help='path to model')
-    parser.add_argument('--model_type', type=str, default='yolov7',
-        help='model type : yolov7, detectron2, mmdet')
+    parser.add_argument('--model_type', type=str, default='yolov7', help='model type : yolov7, detectron2, mmdet')
     parser.add_argument('--device', type=str, default='cuda:0', help='select cpu/gpu')
     parser.add_argument('--cfg_path', type=str, default=None, help='Path to config file')
     parser.add_argument('--path', type=str, default='val/', help='Path to the image folder')
-    parser.add_argument('--annotations_path', type=str, default='val.json',
-        help='Path to the annotations file')
+    parser.add_argument('--annotations_path', type=str, default='val.json', help='Path to the annotations file')
     parser.add_argument('--csv', type=str, default='training_data.csv', help='Path to the CSV file')
     parser.add_argument('--outfile', type=str, default='space.json', help='Name of the output file')
-    parser.add_argument('--custom', action='store_true',
-        help='Use this flag if running inference on a custom trained model')
+    parser.add_argument('--custom', action='store_true', help='For running inference on a custom trained model')
     # create a parser
     args = parser.parse_args()
     # Initializing the class object

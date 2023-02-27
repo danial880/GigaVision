@@ -1,12 +1,12 @@
 class SearchSpace:
-# Slice bounds
+    # Slice bounds
     # slice height lower bounds
     s_h_lb = 3840
     # slice height upper bounds
     s_h_ub = 3840
     # slice height step
     s_h_res = 512
-    # list of slice heights 
+    # list of slice heights
     s_h = list(range(s_h_lb, s_h_ub+s_h_res, s_h_res))
 
     # slice width lower bounds
@@ -25,7 +25,7 @@ class SearchSpace:
     r_h_ub = 640
     # resize height step
     r_h_res = 320
-    # list of resize heights 
+    # list of resize heights
     r_h = list(range(r_h_lb, r_h_ub+r_h_res, r_h_res))
 
     # resize width lower bounds
@@ -35,7 +35,8 @@ class SearchSpace:
     # resize width step
     r_w_res = 320
     # list of resize widths
-    r_w = list(range(r_w_lb, r_w_ub+r_w_res, r_w_res)) 
+    r_w = list(range(r_w_lb, r_w_ub+r_w_res, r_w_res))
+
 
 ss = SearchSpace()
 print(ss.s_h)

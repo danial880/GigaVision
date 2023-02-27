@@ -23,12 +23,12 @@ usage: python metric.py --annotations_path /path/to/annotations.json \
 """
 import os
 import sys
-import json
 import logging
 import argparse
 from tqdm import tqdm
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+
 
 class EvaluationMetrics:
     """
@@ -94,10 +94,8 @@ class EvaluationMetrics:
         Returns:
         float: The IoU value, a float in the range [0, 1].
         """
-        gt_box_area = (ground_truth[2] - ground_truth[0]) * \
-                        (ground_truth[3] - ground_truth[1])
-        pred_box_area = (prediction[2] - prediction[0]) * \
-                            (prediction[3] - prediction[1])
+        gt_box_area = (ground_truth[2] - ground_truth[0]) * (ground_truth[3] - ground_truth[1])
+        pred_box_area = (prediction[2] - prediction[0]) * (prediction[3] - prediction[1])
         x_1 = max(ground_truth[0], prediction[0])
         y_1 = max(ground_truth[1], prediction[1])
         x_2 = min(ground_truth[2], prediction[2])
@@ -139,8 +137,7 @@ class EvaluationMetrics:
         annotations = self.annotations['annotations']
         for annotation in tqdm(annotations, desc='Counting'):
             gt_x, gt_y, gt_width, gt_height = annotation[self.iou_type]
-            gt_x1, gt_y1, gt_x2, gt_y2 = self.convert_bbox_format(gt_x, gt_y,
-                                                            gt_width, gt_height)
+            gt_x1, gt_y1, gt_x2, gt_y2 = self.convert_bbox_format(gt_x, gt_y, gt_width, gt_height)
             max_iou = 0
             best_pred = None
             for result in self.results:
@@ -148,8 +145,7 @@ class EvaluationMetrics:
                 pred_x1, pred_y1, pred_x2, pred_y2 = self.convert_bbox_format(
                                                         pred_x, pred_y,
                                                         pred_width, pred_height)
-                iou = self.calculate_iou((gt_x1, gt_y1, gt_x2, gt_y2), (pred_x1,
-                                            pred_y1, pred_x2, pred_y2))
+                iou = self.calculate_iou((gt_x1, gt_y1, gt_x2, gt_y2), (pred_x1, pred_y1, pred_x2, pred_y2))
                 if iou > max_iou:
                     max_iou = iou
                     best_pred = result
@@ -168,7 +164,7 @@ class EvaluationMetrics:
         Evaluate the results using the COCO evaluation tool.
 
         Parameters:
-        coco_eval (coco evaluation object): Object of the coco evaluation class 
+        coco_eval (coco evaluation object): Object of the coco evaluation class
         initialized with ground truth and predicted data.
 
         Returns:
@@ -186,7 +182,7 @@ class EvaluationMetrics:
         """
         Calculates the mean Average Precision (mAP) and Average Recall (AR)
         scores for all categories and each individual category.
-        
+
         The results are stored in the 'metrics' dictionary attribute with keys
         in the format:
         'mAP_all' for the overall mAP score
@@ -220,7 +216,7 @@ class EvaluationMetrics:
         for  all classes  and for  each class individually. Also calculates true
         positive  (true_positive),  false positive  (false_positive),  and false
         negative (false_negative) counts.
-        
+
         Returns:
             dict: A dictionary of evaluation metrics.
         """
@@ -228,20 +224,16 @@ class EvaluationMetrics:
         self.__calculate_tp_fp_fn()
         return self.metrics
 
+
 if __name__ == "__main__":
+    import json
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-ann_pth', '--annotations_path', type=str,
-        help='Path to annotations JSON file')
-    parser.add_argument('-rslt_pth','--results_path', type=str,
-        help='Path to results JSON file')
-    parser.add_argument('-iou','--iou_thresh', default=0.5, type=float,
-        help='IOU Threshold')
+    parser.add_argument('-ann_pth', '--annotations_path', type=str, help='Path to annotations JSON file')
+    parser.add_argument('-rslt_pth', '--results_path', type=str, help='Path to results JSON file')
+    parser.add_argument('-iou', '--iou_thresh', default=0.5, type=float, help='IOU Threshold')
     args = parser.parse_args()
-    logging.basicConfig(filename='logs.txt', level=logging.INFO,
-                    format='%(asctime)s:%(levelname)s:%(message)s')
-    evaluation_metrics = EvaluationMetrics(args.annotations_path,
-                                        args.results_path,
-                                        args.iou_thresh)
+    logging.basicConfig(filename='logs.txt', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+    evaluation_metrics = EvaluationMetrics(args.annotations_path, args.results_path, args.iou_thresh)
     results = evaluation_metrics.calculate_metrics()
     logging.info(json.dumps(results, indent=4, sort_keys=False))
     print(json.dumps(results, indent=4, sort_keys=False))

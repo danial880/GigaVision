@@ -1,4 +1,7 @@
-import json
+"""
+Read the results text file and return a dictionary of all experiments
+"""
+
 
 def read_file_to_list_of_dicts(file_path):
     with open(file_path, "r") as file:
@@ -20,6 +23,6 @@ def read_file_to_list_of_dicts(file_path):
                         current_dict[key] = value
                 dicts.append(current_dict)
         return dicts
-dicts = read_file_to_list_of_dicts("results.txt")
-print(dicts)
 
+
+dicts = read_file_to_list_of_dicts("results.txt")
