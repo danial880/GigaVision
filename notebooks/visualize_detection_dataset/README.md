@@ -1,5 +1,5 @@
 # Visualizing GigaVision Detection Dataset
 <h4>
-    <img width="700" alt="teaser" src="https://raw.githubusercontent.com/obss/sahi/main/resources/sliced_inference.gif">
+    <img width="720" alt="teaser" src="https://github.com/danial880/Gigavision/blob/main/src/pics_gifs/auto_adjust.gif">
 </h4>
 
