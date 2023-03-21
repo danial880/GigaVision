@@ -11,8 +11,10 @@ A Jupyter Notebook for visualizing annotations with added features for a better 
 A Jupyter Notebook for generating COCO annotations from JSON files. 
 
 - [3D Results Plot](https://github.com/danial880/Gigavision/tree/main/notebooks/3D_plots) 
+
 Plot search space results in 3D. 
 - [Analyze Tracking Sequences](https://github.com/danial880/Gigavision/tree/main/notebooks/analyze_tracking_dataset) 
+
 Visualize bounding box distribution of each tracking ID in a particular sequence.
 
 ## Getting Started
