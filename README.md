@@ -1,16 +1,10 @@
 # GigaVision
 
-A collection of Jupyter Notebooks for visualizing annotations and generating COCO annotations from GigaVision JSON files.
-## VisGiga 
-
+[GigaVision](https://gigavision.cn) is a program that seeks to revolutionize computer vision when it meets gigapixel videography with both wide field-of-view and high-resolution details. 
+## Notebooks
+- [VisGiga](https://github.com/danial880/Gigavision/blob/main/notebooks/visualize_detection_dataset/VisGiga.ipynb) 
 A Jupyter Notebook for visualizing annotations with added features for a better user experience. 
-
-#### Features
-- Highlight bounding boxes
-- Auto-adjust label font size
-- Option to select categories to view
-
-## GigaToCoco
+- [GigaToCoco](https://github.com/danial880/Gigavision/tree/main/notebooks/convert_giga_to_coco)
 A Jupyter Notebook for generating COCO annotations from JSON files. 
 
 ## Getting Started
