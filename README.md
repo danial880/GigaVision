@@ -1,6 +1,6 @@
 # GigaVision
 
-[GigaVision](https://gigavision.cn) is a program that seeks to revolutionize computer vision when it meets gigapixel videography with both wide field-of-view and high-resolution details. 
+[GigaVision](https://gigavision.cn) is a program that seeks to revolutionize computer vision when it meets gigapixel videography with both wide field-of-view and high-resolution details. The project contains visualization notebooks that helps understanding the diversity of gigapixel  detection and tracking dataset. It also includes a search space which explore best possible image size with respect to best accuracy and inference time.
 ## Notebooks
 - [VisGiga](https://github.com/danial880/Gigavision/blob/main/notebooks/visualize_detection_dataset/VisGiga.ipynb) 
 
@@ -22,6 +22,7 @@ Visualize bounding box distribution of each tracking ID in a particular sequence
 - Jupyter Notebook
 - Matplotlib
 - NumPy
+- OpenCV 
 - PyCOCO Tools
 
 ## Explore Search Space
